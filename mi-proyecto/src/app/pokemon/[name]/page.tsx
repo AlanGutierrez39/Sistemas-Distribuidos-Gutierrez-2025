@@ -1,51 +1,95 @@
-"use client";
-import React, { useEffect, useState } from "react";
+"use client"
 import axios from "axios";
 import Link from "next/link";
+import BackButton from "@/components/BackButton";
+import { ArrowLeft } from "lucide-react";
 
 interface PokemonDetail {
   name: string;
-  sprites: { front_default: string };
+  height: number;
+  weight: number;
+  sprites: {
+    front_default: string;
+    other?: {
+      "official-artwork"?: {
+        front_default?: string;
+      };
+    };
+  };
   types: { type: { name: string } }[];
 }
 
-export default function PokemonDetail({
-  params,
-}: {
-  params: { name: string };
+export default async function PokemonDetailPage(props: {
+  params: Promise<{ name: string }>;
 }) {
-  const { name } = params;
-  const [pokemon, setPokemon] = useState<PokemonDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { name } = await props.params;
 
-  useEffect(() => {
-    axios
-      .get(`https://pokeapi.co/api/v2/pokemon/${name}`)
-      .then((res) => setPokemon(res.data))
-      .finally(() => setLoading(false));
-  }, [name]);
+  const res = await axios.get(`https://pokeapi.co/api/v2/pokemon/${name}`);
+  const pokemon: PokemonDetail = res.data;
 
-  if (loading) return <p>Cargando detalles...</p>;
-  if (!pokemon) return <p>Pokémon no encontrado 😢</p>;
+  const image =
+    pokemon.sprites.other?.["official-artwork"]?.front_default ||
+    pokemon.sprites.front_default;
 
   return (
-    <div className="text-center">
-      <h1 className="text-3xl font-bold capitalize mb-4">{pokemon.name}</h1>
-      <img
-        src={pokemon.sprites.front_default}
-        alt={pokemon.name}
-        className="mx-auto mb-4"
-      />
-      <p className="text-lg">
-        <strong>Tipos:</strong>{" "}
-        {pokemon.types.map((t) => t.type.name).join(", ")}
-      </p>
-      <Link
-        href="/"
-        className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-      >
-        🔙 Volver a la lista
-      </Link>
+    <div className="p-6">
+      {/* 🔙 Botón visual de volver */}
+      <div className="mb-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 bg-blue-600 text-white font-medium px-5 py-2 rounded-full shadow-md hover:bg-blue-700 hover:shadow-lg transition-all"
+        >
+          <ArrowLeft size={18} />
+          Volver a la lista
+        </Link>
+      </div>
+
+      {/* 🧩 Detalle del Pokémon */}
+      <div className="max-w-md mx-auto text-center bg-white shadow-lg rounded-xl p-6">
+        <h1 className="text-4xl font-bold capitalize mb-4 text-gray-800">
+          {pokemon.name}
+        </h1>
+
+        {image && (
+          <img
+            src={image}
+            alt={pokemon.name}
+            className="mx-auto w-48 h-48 transition-transform hover:scale-105"
+          />
+        )}
+
+        <div className="mt-4 text-gray-700">
+          <p className="text-lg">
+            <strong>Altura:</strong> {pokemon.height / 10} m
+          </p>
+          <p className="text-lg">
+            <strong>Peso:</strong> {pokemon.weight / 10} kg
+          </p>
+
+          <div className="mt-4">
+            <span className="font-semibold text-gray-800">Tipos:</span>{" "}
+            {pokemon.types.map((t) => (
+              <span
+                key={t.type.name}
+                className="inline-block bg-blue-100 text-blue-800 font-medium rounded-full px-3 py-1 mx-1 text-sm"
+              >
+                {t.type.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 💡 Botón también al final, centrado (opcional) */}
+      <div className="mt-10 text-center">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold transition-colors"
+        >
+          <ArrowLeft size={18} />
+          Volver a la lista
+        </Link>
+      </div>
     </div>
   );
 }

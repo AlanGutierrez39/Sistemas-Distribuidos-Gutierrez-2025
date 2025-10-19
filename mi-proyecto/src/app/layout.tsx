@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import QueryProvider from "../components/QueryProvider";
 import "./globals.css";
 
 export const metadata = {
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </nav>
         </header>
 
-        <main style={{ maxWidth: 1000, margin: '0 auto', padding: '0 16px' }}>{children}</main>
+        <QueryProvider>
+          <main style={{ maxWidth: 1000, margin: '0 auto', padding: '0 16px' }}>{children}</main>
+        </QueryProvider>
 
         <footer
           style={{

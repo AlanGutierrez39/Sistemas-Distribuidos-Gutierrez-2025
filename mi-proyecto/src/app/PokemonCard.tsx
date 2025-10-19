@@ -4,7 +4,6 @@ import Link from "next/link";
 
 interface Props {
   name: string;
-  url: string;
 }
 
 export default function PokemonCard({ name }: Props) {
