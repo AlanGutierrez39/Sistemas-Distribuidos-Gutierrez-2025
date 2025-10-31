@@ -1,40 +1,49 @@
+"use client";
+
+import "./globals.css";
 import React from "react";
 import Link from "next/link";
-import QueryProvider from "../components/QueryProvider";
-import "./globals.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-export const metadata = {
-  title: 'Pokedex - Lista de Pokémon',
-  description: 'Listado y detalle de Pokémon usando PokeAPI'
-};
+// Creamos el cliente global de React Query
+const queryClient = new QueryClient();
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="es">
-      <body>
-        <header style={{ padding: 16, borderBottom: '1px solid #eaeaea', marginBottom: 16 }}>
-          <nav style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <Link href="/" style={{ fontWeight: '700', textDecoration: 'none' }}>
-              Lista de Pokemons
-            </Link>
-          </nav>
-        </header>
+      <body className="min-h-screen flex flex-col bg-gray-50 text-gray-800">
+        <QueryClientProvider client={queryClient}>
+          {/* NAVBAR */}
+          <header className="bg-red-500 text-white shadow-md">
+            <nav className="container mx-auto flex justify-between items-center px-4 py-3">
+              <h1 className="text-xl font-bold">Pokédex App</h1>
+              <div className="flex gap-4">
+                <Link href="/" className="hover:underline">
+                  🏠 Lista
+                </Link>
+                <Link href="/favorites" className="hover:underline">
+                  ❤️ Favoritos
+                </Link>
+              </div>
+            </nav>
+          </header>
 
-        <QueryProvider>
-          <main style={{ maxWidth: 1000, margin: '0 auto', padding: '0 16px' }}>{children}</main>
-        </QueryProvider>
+          {/* CONTENIDO PRINCIPAL */}
+          <main className="flex-1 container mx-auto px-4 py-8">{children}</main>
 
-        <footer
-          style={{
-            marginTop: 40,
-            padding: 20,
-            borderTop: '1px solid #eaeaea',
-            textAlign: 'center',
-            color: '#666'
-          }}
-        >
-          © 2025 PokeNext. Todos los derechos reservados.
-        </footer>
+          {/* FOOTER */}
+          <footer className="bg-gray-100 text-center py-4 text-sm text-gray-500 border-t">
+            © {new Date().getFullYear()} Pokédex App — Hecho con ❤️ y Next.js
+          </footer>
+
+          {/* DevTools opcional */}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
       </body>
     </html>
   );
