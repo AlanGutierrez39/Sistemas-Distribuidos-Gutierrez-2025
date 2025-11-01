@@ -1,25 +1,25 @@
 import { NextResponse } from "next/server";
 import { Database } from "@/app/lib/database";
 
+export async function GET() {
+  const data = await Database.read();
+  return NextResponse.json(data);
+}
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    if (!body.id) {
-      return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    const newFavorite = await req.json();
+    const favorites = await Database.read();
+
+    if (favorites.some((f: any) => f.name === newFavorite.name)) {
+      return NextResponse.json({ error: "Ya existe" }, { status: 409 });
     }
-
-    const favorite = {
-      id: body.id,
-      addedAt: new Date().toISOString(),
-    };
-
-    await Database.add(favorite);
-
-    return NextResponse.json(favorite, { status: 201 });
-  } catch (err: any) {
-    if (err.message === "ALREADY_EXISTS")
-      return NextResponse.json({ error: "Already in favorites" }, { status: 409 });
-
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    //newFavorite.addedAt = new Date().toISOString();
+    favorites.push(newFavorite);
+    await Database.write(favorites);
+    return NextResponse.json(newFavorite, { status: 201 });
+  } catch (error) {
+    console.error("Error en POST /api/favorites", error);
+    return NextResponse.json({ error: "Error actualizando favoritos" }, { status: 500 });
   }
 }

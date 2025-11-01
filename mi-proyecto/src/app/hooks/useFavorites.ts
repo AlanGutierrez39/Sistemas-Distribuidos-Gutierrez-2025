@@ -1,19 +1,28 @@
-"use client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addFavorite, removeFavorite, getFavorites } from "../services/favorites.service";
+interface Favorite {
+  name: string;
+  addedAt: string;
+}
 
 export function useFavorites() {
-  return useQuery({
+  return useQuery<Favorite[]>({
     queryKey: ["favorites"],
-    queryFn: getFavorites,
+    queryFn: async () => {
+      const res = await axios.get("/api/favorites");
+      return res.data;
+    },
   });
 }
 
 export function useAddFavorite() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: addFavorite,
+    mutationFn: async (pokemon: Favorite) => {
+      const res = await axios.post("/api/favorites", { name: pokemon.name});//, addedAt: new Date().toISOString() 
+      return res.data;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorites"] }),
   });
 }
@@ -21,7 +30,9 @@ export function useAddFavorite() {
 export function useRemoveFavorite() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: removeFavorite,
+    mutationFn: async (name: string) => {
+      await axios.delete(`/api/favorites/${name}`);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorites"] }),
   });
 }

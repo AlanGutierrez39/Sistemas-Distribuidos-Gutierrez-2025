@@ -11,17 +11,22 @@ const DB_PATH = path.join(process.cwd(), "database.json");
 export class Database {
   static async read(): Promise<Favorite[]> {
     try {
-      const data = await fs.readFile(DB_PATH, "utf-8");
-      return JSON.parse(data);
-    } catch (error) {
-      return [];
+      const data = await fs.readFile(DB_PATH, "utf8");
+      return data.trim() ? JSON.parse(data) : [];
+    } catch (error: any) {
+      // si no existe, lo creamos vacío
+      if ((error as any)?.code === "ENOENT") {
+        await fs.writeFile(DB_PATH, "[]", "utf8");
+        return [];
+      }
+      throw error;
     }
   }
 
   static async write(data: Favorite[]) {
-    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2));
+    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), "utf8");
   }
-
+  
   static async add(fav: Favorite) {
     const favorites = await this.read();
     const exists = favorites.find((f) => f.id === fav.id);

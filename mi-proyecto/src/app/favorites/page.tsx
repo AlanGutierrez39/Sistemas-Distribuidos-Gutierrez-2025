@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useFavorites, useRemoveFavorite } from "../hooks/useFavorites";
+import PokemonCard from "../PokemonCard";
 
 export default function FavoritesPage() {
   const { data: favorites, isLoading } = useFavorites();
@@ -12,11 +13,13 @@ export default function FavoritesPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">❤️ Tus Pokémons Favoritos</h1>
-      {favorites.length === 0 ? (
+      {!favorites ? (
+        <p>Cargando favoritos...</p>
+        ) : favorites.length === 0 ? (
         <p>No tenés favoritos aún.</p>
-      ) : (
+        ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {favorites.map((f: any) => (
+            {favorites.map((f: any) => (
             <div key={f.id} className="p-4 border rounded-lg flex flex-col items-center">
               <p className="capitalize font-medium">{f.id}</p>
               <button
