@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 interface Favorite {
-  name: string;
+  id: string;
   addedAt: string;
 }
 
@@ -20,7 +20,7 @@ export function useAddFavorite() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (pokemon: Favorite) => {
-      const res = await axios.post("/api/favorites", { name: pokemon.name});//, addedAt: new Date().toISOString() 
+      const res = await axios.post("/api/favorites", { id: pokemon.id});//, addedAt: new Date().toISOString() 
       return res.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorites"] }),

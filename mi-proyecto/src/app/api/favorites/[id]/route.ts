@@ -2,23 +2,31 @@ import { NextResponse } from "next/server";
 import { Database } from "@/app/lib/database";
 
 export async function DELETE(
-  req: Request,
-  context: { params: Promise<{ id: string }> } // 👈 importante
+  _req: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await context.params; // 👈 se resuelve con await
+    const { id } = await context.params;
 
     const favorites = await Database.read();
-    const newList = favorites.filter((f: any) => f.id !== id);
+    const exists = favorites.find((f: any) => f.id === id);
 
-    if (newList.length === favorites.length) {
-      return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+    if (!exists) {
+      return NextResponse.json(
+        { error: "No encontrado" },
+        { status: 404 }
+      );
     }
 
+    const newList = favorites.filter((f: any) => f.id !== id);
     await Database.write(newList);
-    return NextResponse.json({ message: "Eliminado correctamente" }, { status: 200 });
-  } catch (error: any) {
-    console.error("Error al eliminar favorito:", error);
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error("❌ Error eliminando favorito:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }

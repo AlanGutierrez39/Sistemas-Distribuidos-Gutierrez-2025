@@ -15,13 +15,20 @@ export default function PokemonCard({ name }: Props) {
   const isFavorite = favorites?.some((f: any) => f.id === name);
 
   const toggleFavorite = async () => {
-    try {
-      if (isFavorite) await removeMutation.mutateAsync(name);
-      else await addMutation.mutateAsync(name);
-    } catch (err) {
-      alert("Error actualizando favoritos");
+  try {
+    if (isFavorite) {
+      await removeMutation.mutateAsync(name);
+    } else {
+      await addMutation.mutateAsync({
+        id: name,
+        addedAt: new Date().toISOString(),
+      });
     }
-  };
+  } catch (err) {
+    alert("Error actualizando favoritos");
+  }
+};
+
 
   return (
     <div className="p-4 border rounded-lg flex flex-col items-center shadow-sm">
