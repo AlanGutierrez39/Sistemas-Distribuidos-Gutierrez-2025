@@ -38,7 +38,7 @@ export default function RootLayout({
 
           {/* FOOTER */}
           <footer className="bg-gray-100 text-center py-4 text-sm text-gray-500 border-t">
-            © {new Date().getFullYear()} Pokédex App — Hecho con ❤️ y Next.js
+            © {new Date().getFullYear()} Pokédex App — Hecho con ❤️ y Next.js — Todos los derechos reservados.
           </footer>
 
           {/* DevTools opcional */}

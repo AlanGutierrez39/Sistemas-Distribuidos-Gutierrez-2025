@@ -1,7 +1,8 @@
 import axios from "axios";
 import Link from "next/link";
-import BackButton from "@/components/BackButton";
 import { ArrowLeft } from "lucide-react";
+import BackButton from "@/components/BackButton";
+import PokemonFavoriteButton from "@/components/PokemonFavoriteButton";
 
 interface PokemonDetail {
   name: string;
@@ -78,7 +79,10 @@ export default async function PokemonDetailPage(props: {
           </div>
         </div>
       </div>
-
+      {/* ⭐ Botón de favorito (Client Component) */}
+        <div className="mt-6">
+          <PokemonFavoriteButton name={pokemon.name} />
+        </div>
       {/* 💡 Botón también al final, centrado (opcional) */}
       <div className="mt-10 text-center">
         <Link

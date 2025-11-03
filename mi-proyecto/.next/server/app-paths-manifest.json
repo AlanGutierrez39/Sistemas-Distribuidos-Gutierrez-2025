@@ -3,5 +3,6 @@
   "/api/favorites/route": "app/api/favorites/route.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/favorites/page": "app/favorites/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/pokemon/[name]/page": "app/pokemon/[name]/page.js"
 }

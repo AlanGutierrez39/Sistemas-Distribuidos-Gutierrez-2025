@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useFavorites, useAddFavorite, useRemoveFavorite } from "./hooks/useFavorites";
 
 interface Props {
@@ -32,7 +33,12 @@ export default function PokemonCard({ name }: Props) {
 
   return (
     <div className="p-4 border rounded-lg flex flex-col items-center shadow-sm">
-      <p className="capitalize font-medium">{name}</p>
+      <Link
+        href={`/pokemon/${name}`}
+        className="block border rounded-lg shadow hover:bg-gray-100 p-3 text-center transition"
+      >
+        <h2 className="text-lg font-semibold capitalize">{name}</h2>
+      </Link>
       <button
         onClick={toggleFavorite}
         disabled={addMutation.isPending || removeMutation.isPending}
