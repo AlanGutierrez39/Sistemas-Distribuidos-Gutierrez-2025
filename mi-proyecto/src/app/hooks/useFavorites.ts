@@ -1,9 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-interface Favorite {
-  id: string;
+interface Favorite {  
+  id: string; // ID del Pokémon (nombre original)
+  name: string; // nombre personalizado del usuario
+  description: string;
   addedAt: string;
+  customName?: string;
 }
 
 export function useFavorites() {
@@ -19,8 +22,11 @@ export function useFavorites() {
 export function useAddFavorite() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (pokemon: Favorite) => {
-      const res = await axios.post("/api/favorites", { id: pokemon.id});//, addedAt: new Date().toISOString() 
+    mutationFn: async (fav: { id: string; addedAt: string; customName: string; description: string }) => {
+      const res = await axios.post("/api/favorites", {
+        ...fav,
+        addedAt: new Date().toISOString(),
+      });
       return res.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorites"] }),
@@ -30,8 +36,8 @@ export function useAddFavorite() {
 export function useRemoveFavorite() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (name: string) => {
-      await axios.delete(`/api/favorites/${name}`);
+    mutationFn: async (id: string) => {
+      await axios.delete(`/api/favorites/${id}`);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorites"] }),
   });

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useFavorites, useRemoveFavorite } from "../hooks/useFavorites";
-import PokemonCard from "../PokemonCard";
+import PokemonCard from "../../components/PokemonCard";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
