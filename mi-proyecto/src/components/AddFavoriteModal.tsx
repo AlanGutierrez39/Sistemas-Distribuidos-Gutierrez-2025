@@ -1,19 +1,30 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSave?: (payload: { name: string; note?: string }) => void;
+  onSave?: (payload: { name: string; note: string }) => void;
   defaultName?: string;
 };
 
+// Esquema de validación con Yup
+const validationSchema = Yup.object({
+  name: Yup.string()
+    .min(3, 'El nombre debe tener al menos 3 caracteres')
+    .max(50, 'El nombre no puede superar los 50 caracteres')
+    .required('El nombre es obligatorio'),
+  note: Yup.string()
+    .min(10, 'La descripción debe tener al menos 10 caracteres')
+    .max(200, 'La descripción no puede superar los 200 caracteres')
+    .required('La descripción es obligatoria'),
+});
+
 export default function AddFavoriteModal({ open, onClose, onSave, defaultName = '' }: Props) {
   const [mounted, setMounted] = useState(false);
-  const [error, setError] = useState('');
-  const [name, setName] = useState(defaultName);
-  const [note, setNote] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -34,22 +45,6 @@ export default function AddFavoriteModal({ open, onClose, onSave, defaultName = 
 
   const node = document.body;
 
-  const handleSubmit = () => {
-    setError('');
-    
-    if (!name.trim()) {
-      setError('El nombre es obligatorio.');
-      return;
-    }
-    if (!note.trim()) {
-      setError('La descripción es obligatoria.');
-      return;
-    }
-    
-    onSave?.({ name: name.trim(), note: note.trim() });
-    onClose();
-  };
-
   const modal = (
     <div
       style={{
@@ -62,7 +57,6 @@ export default function AddFavoriteModal({ open, onClose, onSave, defaultName = 
         animation: 'fadeIn 0.3s ease-out',
       }}
     >
-      {/* Backdrop con blur */}
       <div
         onClick={onClose}
         style={{
@@ -73,7 +67,6 @@ export default function AddFavoriteModal({ open, onClose, onSave, defaultName = 
         }}
       />
       
-      {/* Modal con efecto liquid glass */}
       <div
         role="dialog"
         aria-modal="true"
@@ -95,7 +88,6 @@ export default function AddFavoriteModal({ open, onClose, onSave, defaultName = 
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Efecto de brillo superior */}
         <div
           style={{
             position: 'absolute',
@@ -124,85 +116,119 @@ export default function AddFavoriteModal({ open, onClose, onSave, defaultName = 
           Agregar a favoritos
         </h3>
 
-        <div>
-          <label style={{ display: 'block', marginBottom: '16px' }}>
-            <span style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              Nombre <span style={{ color: '#ff6b9d' }}>*</span>
-            </span>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="Ej: Mi restaurante favorito"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '12px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: error ? '1px solid #ff6b9d' : '1px solid rgba(255, 255, 255, 0.2)',
-                color: 'white',
-                fontSize: '15px',
-                outline: 'none',
-                transition: 'all 0.3s ease',
-                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
-              }}
-              onFocus={(e) => {
-                if (!error) e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.4)';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-              }}
-              onBlur={(e) => {
-                if (!error) e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-              }}
-            />
-          </label>
+        <Formik
+          initialValues={{
+            name: defaultName,
+            note: '',
+          }}
+          validationSchema={validationSchema}
+          onSubmit={(values) => {
+            onSave?.(values);
+            onClose();
+          }}
+        >
+          {({ errors, touched, isValid, dirty }) => (
+            <Form>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                  Nombre <span style={{ color: '#ff6b9d' }}>*</span>
+                </label>
+                <Field
+                  name="name"
+                  type="text"
+                  placeholder="Ej: Mi Pokémon favorito"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: errors.name && touched.name 
+                      ? '1px solid #ff6b9d' 
+                      : '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'white',
+                    fontSize: '15px',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+                  }}
+                  onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
+                    if (!(errors.name && touched.name)) {
+                      e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.4)';
+                    }
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                  }}
+                  onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                    if (!(errors.name && touched.name)) {
+                      e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                    }
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  }}
+                />
+                <ErrorMessage name="name">
+                  {(msg) => (
+                    <p style={{ 
+                      color: '#ff6b9d', 
+                      fontSize: '13px', 
+                      marginTop: '6px',
+                      marginBottom: 0,
+                    }}>
+                      {msg}
+                    </p>
+                  )}
+                </ErrorMessage>
+              </div>
 
-          <label style={{ display: 'block', marginBottom: '16px' }}>
-            <span style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              Descripción <span style={{ color: '#ff6b9d' }}>*</span>
-            </span>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Agrega una nota sobre por qué es tu favorito..."
-              rows={3}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '12px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: error ? '1px solid #ff6b9d' : '1px solid rgba(255, 255, 255, 0.2)',
-                color: 'white',
-                fontSize: '15px',
-                outline: 'none',
-                resize: 'none',
-                transition: 'all 0.3s ease',
-                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
-                fontFamily: 'inherit',
-              }}
-              onFocus={(e) => {
-                if (!error) e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.4)';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-              }}
-              onBlur={(e) => {
-                if (!error) e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-              }}
-            />
-          </label>
-          
-          {error && (
-            <p style={{ 
-              color: '#ff6b9d', 
-              fontSize: '14px', 
-              textAlign: 'center',
-              marginBottom: '16px',
-              animation: 'shake 0.4s ease',
-            }}>
-              {error}
-            </p>
-          )}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                  Descripción <span style={{ color: '#ff6b9d' }}>*</span>
+                </label>
+                <Field
+                  as="textarea"
+                  name="note"
+                  placeholder="Agrega una nota sobre por qué es tu favorito..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: errors.note && touched.note 
+                      ? '1px solid #ff6b9d' 
+                      : '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'white',
+                    fontSize: '15px',
+                    outline: 'none',
+                    resize: 'none',
+                    transition: 'all 0.3s ease',
+                    boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+                    fontFamily: 'inherit',
+                  }}
+                  onFocus={(e: React.FocusEvent<HTMLTextAreaElement>) => {
+                    if (!(errors.note && touched.note)) {
+                      e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.4)';
+                    }
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                  }}
+                  onBlur={(e: React.FocusEvent<HTMLTextAreaElement>) => {
+                    if (!(errors.note && touched.note)) {
+                      e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                    }
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  }}
+                />
+                <ErrorMessage name="note">
+                  {(msg) => (
+                    <p style={{ 
+                      color: '#ff6b9d', 
+                      fontSize: '13px', 
+                      marginTop: '6px',
+                      marginBottom: 0,
+                    }}>
+                      {msg}
+                    </p>
+                  )}
+                </ErrorMessage>
+              </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '8px' }}>
             <button
@@ -231,35 +257,46 @@ export default function AddFavoriteModal({ open, onClose, onSave, defaultName = 
               Cancelar
             </button>
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
+              disabled={!isValid || !dirty}
               style={{
                 padding: '10px 24px',
                 borderRadius: '12px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #ec4899 0%, #ef4444 100%)',
+                background: (!isValid || !dirty)
+                  ? 'rgba(150, 150, 150, 0.3)'
+                  : 'linear-gradient(135deg, #ec4899 0%, #ef4444 100%)',
                 color: 'white',
                 fontSize: '15px',
                 fontWeight: '600',
-                cursor: 'pointer',
+                cursor: (!isValid || !dirty) ? 'not-allowed' : 'pointer',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 4px 15px rgba(236, 72, 153, 0.4)',
+                boxShadow: (!isValid || !dirty) 
+                  ? 'none'
+                  : '0 4px 15px rgba(236, 72, 153, 0.4)',
+                opacity: (!isValid || !dirty) ? 0.5 : 1,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #f472b6 0%, #f87171 100%)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(236, 72, 153, 0.5)';
+                if (isValid && dirty) {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #f472b6 0%, #f87171 100%)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(236, 72, 153, 0.5)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #ec4899 0%, #ef4444 100%)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(236, 72, 153, 0.4)';
+                if (isValid && dirty) {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #ec4899 0%, #ef4444 100%)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(236, 72, 153, 0.4)';
+                }
               }}
             >
               Guardar
             </button>
           </div>
-        </div>
+            </Form>
+          )}
+        </Formik>
 
         <style>{`
           @keyframes fadeIn {
@@ -275,11 +312,6 @@ export default function AddFavoriteModal({ open, onClose, onSave, defaultName = 
               opacity: 1;
               transform: translateY(0) scale(1);
             }
-          }
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
           }
           input::placeholder, textarea::placeholder {
             color: rgba(255, 255, 255, 0.5);
